@@ -1,2 +1,470 @@
-jago
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netbil Pro v2 Ultra</title>
+<style>
+:root{
+  --bg:#0f172a;--card:#1e293b;--border:#334155;--text:#f1f5f9;
+  --muted:#94a3b8;--primary:#3b82f6;--success:#22c55e;--danger:#ef4444;--warning:#f59e0b;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif}
+body{background:var(--bg);color:var(--text)}
+.login{height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{width:100%;max-width:400px;background:var(--card);padding:32px;border-radius:16px;border:1px solid var(--border)}
+input,select,button,textarea{width:100%;padding:12px;margin-top:8px;border-radius:8px;border:1px solid var(--border);
+  background:#334155;color:var(--text);font-size:14px}
+button{background:var(--primary);border:none;font-weight:700;cursor:pointer}
+button:hover{opacity:0.9}
+button.ghost{background:transparent;border:1px solid var(--border)}
+button.danger{background:var(--danger)}
+.navbar{width:100%;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;padding:0 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.nav-links{display:flex;gap:5px;flex-wrap:wrap;overflow-x:auto}
+.nav-links a{padding:12px 16px;color:var(--muted);text-decoration:none;cursor:pointer;border-radius:8px;white-space:nowrap}
+.nav-links a:hover,.nav-links a.active{background:#334155;color:var(--primary)}
+.content{padding:24px;max-width:1300px;margin:0 auto}
+.card{background:var(--card);padding:20px;border-radius:12px;margin-bottom:16px;border:1px solid var(--border)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+table{width:100%;border-collapse:collapse;margin-top:12px;overflow-x:auto;display:block}
+th,td{padding:12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+th{color:var(--muted);font-size:12px;text-transform:uppercase}
+.page{display:none}.page.active{display:block}
+.badge{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.b-paid{background:rgba(34,197,94,0.2);color:var(--success)}
+.b-unpaid{background:rgba(245,158,11,0.2);color:var(--warning)}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center}
+.modal.active{display:flex}
+.modal-content{background:var(--card);padding:24px;border-radius:12px;max-width:500px;width:90%;border:1px solid var(--border)}
+.search-box{display:flex;gap:8px;margin-bottom:12px}
+.search-box input{margin:0}
+.flex{display:flex;gap:8px}
+.flex-1{flex:1}
+@media print{.no-print{display:none}}
+</style>
+</head>
+<body>
+
+<div id="login" class="login">
+  <div class="login-box">
+    <h2>Netbil Pro v2 Ultra</h2>
+    <p style="color:var(--muted);margin:8px 0 16px">Sistem Billing WiFi Profesional</p>
+    <input id="email" type="email" placeholder="Email">
+    <input id="pass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <button onclick="register()" class="ghost">Daftar Akun Baru</button>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="navbar">
+    <h3>Netbil Pro v2</h3>
+    <div class="nav-links">
+      <a class="active" onclick="showPage('dashboard',this)">Dashboard</a>
+      <a onclick="showPage('pelanggan',this)">Pelanggan</a>
+      <a onclick="showPage('paket',this)">Paket</a>
+      <a onclick="showPage('pppoe',this)">PPPoE</a>
+      <a onclick="showPage('tagihan',this)">Tagihan</a>
+      <a onclick="showPage('voucher',this)">Voucher</a>
+      <a onclick="logout()" style="color:var(--danger)">Logout</a>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Dashboard -->
+    <div id="dashboard" class="page active">
+      <div class="grid">
+        <div class="card"><h3>Total Pelanggan</h3><h2 id="totalPel">0</h2></div>
+        <div class="card"><h3>PPPoE Aktif</h3><h2 id="pppoeAktif">0</h2></div>
+        <div class="card"><h3>Belum Bayar</h3><h2 id="belumBayar">0</h2></div>
+        <div class="card"><h3>Pendapatan Bulan Ini</h3><h2 id="pendapatan">Rp 0</h2></div>
+      </div>
+      <div class="card">
+        <h3>Tagihan Jatuh Tempo 7 Hari</h3>
+        <table id="tblJatuhTempo"><thead><tr><th>Nama</th><th>Akun</th><th>Bulan</th><th>Jumlah</th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+
+    <!-- Pelanggan -->
+    <div id="pelanggan" class="page">
+      <div class="card">
+        <h3>Tambah Pelanggan</h3>
+        <div class="grid">
+          <input id="pNama" placeholder="Nama Lengkap">
+          <input id="pWA" placeholder="No WA 628xxx">
+          <input id="pAlamat" placeholder="Alamat">
+        </div>
+        <button onclick="savePelanggan()">Simpan Pelanggan</button>
+      </div>
+      <div class="card">
+        <div class="search-box">
+          <input id="searchPel" placeholder="Cari nama/wa..." onkeyup="loadPelanggan()">
+        </div>
+        <table id="tblPel"><thead><tr><th>Nama</th><th>WA</th><th>Alamat</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+
+    <!-- Paket -->
+    <div id="paket" class="page">
+      <div class="card">
+        <h3>Buat Paket</h3>
+        <div class="grid">
+          <select id="pkTipe">
+            <option value="pppoe">PPPoE</option>
+            <option value="hotspot">Hotspot</option>
+          </select>
+          <input id="pkNama" placeholder="Nama Paket">
+          <input id="pkRate" placeholder="Rate 20M/20M">
+          <input id="pkHarga" type="number" placeholder="Harga">
+          <input id="pkHari" type="number" value="30" placeholder="Masa Aktif Hari">
+        </div>
+        <button onclick="savePaket()">Simpan Paket</button>
+      </div>
+      <div class="card">
+        <table id="tblPaket"><thead><tr><th>Tipe</th><th>Nama</th><th>Rate</th><th>Harga</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+
+    <!-- PPPoE -->
+    <div id="pppoe" class="page">
+      <div class="card">
+        <h3>Buat Akun PPPoE</h3>
+        <div class="grid">
+          <select id="ppPelanggan"></select>
+          <select id="ppPaket"></select>
+          <input id="ppUser" placeholder="Username PPPoE">
+          <input id="ppPass" placeholder="Password PPPoE">
+        </div>
+        <button onclick="savePPPoE()">Buat Akun</button>
+      </div>
+      <div class="card">
+        <table id="tblPPPoE"><thead><tr><th>Nama</th><th>Username</th><th>Paket</th><th>Expired</th><th>Status</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+
+    <!-- Tagihan -->
+    <div id="tagihan" class="page">
+      <div class="card">
+        <div class="flex">
+          <button onclick="genTagihan()" class="flex-1">Generate Tagihan Bulan Ini</button>
+          <button onclick="exportTagihan()" class="ghost">Export Excel</button>
+        </div>
+        <table id="tblTagih"><thead><tr><th>Nama</th><th>Akun</th><th>Bulan</th><th>Jumlah</th><th>Status</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+
+    <!-- Voucher -->
+    <div id="voucher" class="page">
+      <div class="card">
+        <h3>Generate Voucher Hotspot</h3>
+        <div class="grid">
+          <select id="vPaket"></select>
+          <input id="vQty" type="number" value="10" placeholder="Jumlah Voucher">
+        </div>
+        <button onclick="genVoucher()">Generate Voucher</button>
+      </div>
+      <div class="card">
+        <table id="tblVoucher"><thead><tr><th>Kode</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Struk -->
+<div id="modalStruk" class="modal">
+  <div class="modal-content">
+    <div id="strukContent"></div>
+    <div class="flex no-print" style="margin-top:16px">
+      <button onclick="printStruk()">Print Struk</button>
+      <button onclick="closeModal()" class="ghost">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, onSnapshot, doc, updateDoc, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// PASTE CONFIG FIREBASE KAMU DI SINI
+const firebaseConfig = {
+  apiKey: "xxx",
+  authDomain: "xxx.firebaseapp.com",
+  projectId: "xxx",
+  storageBucket: "xxx.appspot.com",
+  messagingSenderId: "xxx",
+  appId: "xxx"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Auth
+window.login = async () => {
+  try{ await signInWithEmailAndPassword(auth, email.value, pass.value); }
+  catch(e){alert(e.message)}
+}
+window.register = async () => {
+  try{ await createUserWithEmailAndPassword(auth, email.value, pass.value); alert('Akun dibuat') }
+  catch(e){alert(e.message)}
+}
+window.logout = () => signOut(auth);
+
+onAuthStateChanged(auth, user => {
+  if(user){
+    document.getElementById('login').style.display='none';
+    document.getElementById('app').style.display='block';
+    loadAll();
+  }else{
+    document.getElementById('login').style.display='flex';
+    document.getElementById('app').style.display='none';
+  }
+});
+
+// Navigation
+window.showPage = (id,el) => {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// Format Rupiah
+const rupiah = (n) => 'Rp '+n.toLocaleString('id-ID');
+
+// CRUD Pelanggan
+window.savePelanggan = async () => {
+  if(!pNama.value) return alert('Isi nama');
+  await addDoc(collection(db, "pelanggan"), {nama:pNama.value, wa:pWA.value, alamat:pAlamat.value, created:Date.now()});
+  pNama.value=pWA.value=pAlamat.value='';
+  alert('Pelanggan tersimpan');
+}
+
+window.loadPelanggan = () => {
+  const q = query(collection(db, "pelanggan"), orderBy('created','desc'));
+  onSnapshot(q, (snap) => {
+    let html='';
+    let search=searchPel.value.toLowerCase();
+    snap.forEach(doc => {
+      let d=doc.data();
+      if(search &&!d.nama.toLowerCase().includes(search) &&!d.wa.includes(search)) return;
+      html+=`<tr><td>${d.nama}</td><td>${d.wa}</td><td>${d.alamat}</td>
+      <td><button class="ghost" onclick="delPel('${doc.id}')">Hapus</button></td></tr>`;
+    });
+    tblPel.querySelector('tbody').innerHTML=html;
+    totalPel.textContent=snap.size;
+    ppPelanggan.innerHTML='<option value="">Pilih Pelanggan</option>'+snap.docs.map(d=>`<option value="${d.id}">${d.data().nama}</option>`).join('');
+  });
+}
+
+window.delPel = async (id) => {
+  if(confirm('Hapus pelanggan ini?')) await deleteDoc(doc(db,"pelanggan",id));
+}
+
+// CRUD Paket
+window.savePaket = async () => {
+  if(!pkNama.value ||!pkHarga.value) return alert('Lengkapi data');
+  await addDoc(collection(db, "paket"), {
+    tipe:pkTipe.value, nama:pkNama.value, rate:pkRate.value,
+    harga:parseInt(pkHarga.value), hari:parseInt(pkHari.value), created:Date.now()
+  });
+  pkNama.value=pkRate.value=pkHarga.value='';
+  alert('Paket tersimpan');
+}
+
+window.loadPaket = () => {
+  onSnapshot(collection(db, "paket"), (snap) => {
+    let html='';
+    snap.forEach(doc => {
+      let d=doc.data();
+      html+=`<tr><td>${d.tipe.toUpperCase()}</td><td>${d.nama}</td><td>${d.rate}</td>
+      <td>${rupiah(d.harga)}</td>
+      <td><button class="ghost" onclick="delPak('${doc.id}')">Hapus</button></td></tr>`;
+    });
+    tblPaket.querySelector('tbody').innerHTML=html;
+    ppPaket.innerHTML='<option value="">Pilih Paket</option>'+snap.docs.filter(d=>d.data().tipe==='pppoe').map(d=>`<option value="${d.id}">${d.data().nama}</option>`).join('');
+    vPaket.innerHTML=snap.docs.filter(d=>d.data().tipe==='hotspot').map(d=>`<option value="${d.id}">${d.data().nama}</option>`).join('');
+  });
+}
+
+window.delPak = async (id) => {
+  if(confirm('Hapus paket ini?')) await deleteDoc(doc(db,"paket",id));
+}
+
+// CRUD PPPoE
+window.savePPPoE = async () => {
+  if(!ppUser.value ||!ppPelanggan.value) return alert('Lengkapi data');
+  let pelSnap = await getDocs(collection(db,"pelanggan"));
+  let pel = pelSnap.docs.find(d=>d.id==ppPelanggan.value);
+  let pakSnap = await getDocs(collection(db,"paket"));
+  let pak = pakSnap.docs.find(d=>d.id==ppPaket.value);
+  if(!pel ||!pak) return alert('Data tidak ditemukan');
+
+  let expired = Date.now() + pak.data().hari*86400000;
+  await addDoc(collection(db, "pppoe"), {
+    pel_id:ppPelanggan.value, nama:pel.data().nama, wa:pel.data().wa,
+    username:ppUser.value, password:ppPass.value,
+    paket_id:ppPaket.value, paket_nama:pak.data().nama, harga:pak.data().harga,
+    expired:expired, created:Date.now()
+  });
+  ppUser.value=ppPass.value='';
+  alert('Akun PPPoE dibuat');
+}
+
+window.loadPPPoE = () => {
+  onSnapshot(collection(db, "pppoe"), (snap) => {
+    let html='';
+    let now=Date.now();
+    let aktif=0;
+    snap.forEach(doc => {
+      let d=doc.data();
+      let status=d.expired>now?'Aktif':'Expired';
+      if(status==='Aktif') aktif++;
+      html+=`<tr><td>${d.nama}</td><td>${d.username}</td><td>${d.paket_nama}</td>
+      <td>${new Date(d.expired).toLocaleDateString('id-ID')}</td>
+      <td><span class="badge ${status==='Aktif'?'b-paid':'b-unpaid'}">${status}</span></td>
+      <td><button class="ghost" onclick="delPPPoE('${doc.id}')">Hapus</button></td></tr>`;
+    });
+    tblPPPoE.querySelector('tbody').innerHTML=html;
+    pppoeAktif.textContent=aktif;
+  });
+}
+
+window.delPPPoE = async (id) => {
+  if(confirm('Hapus akun PPPoE ini?')) await deleteDoc(doc(db,"pppoe",id));
+}
+
+// Tagihan
+window.genTagihan = async () => {
+  let bulan=new Date().toISOString().slice(0,7);
+  let now=Date.now();
+  let pppoeSnap = await getDocs(collection(db,"pppoe"));
+  let ada=0;
+  for(let d of pppoeSnap.docs){
+    let p=d.data();
+    let cek = await getDocs(query(collection(db,"tagihan"), where('akun_id','==',d.id), where('bulan','==',bulan)));
+    if(cek.empty && p.expired<now+7*86400000){
+      await addDoc(collection(db,"tagihan"),{
+        pel_id:p.pel_id,nama:p.nama,akun_id:d.id,akun_user:p.username,
+        bulan:bulan,jumlah:p.harga,status:'Belum Bayar',created:Date.now()
+      });
+      ada++;
+    }
+  }
+  alert(ada+' tagihan dibuat');
+}
+
+window.loadTagihan = () => {
+  const q = query(collection(db,"tagihan"), orderBy('created','desc'));
+  onSnapshot(q,(snap)=>{
+    let html='';
+    let total=0;
+    let jatuhTempo='';
+    let now=Date.now();
+    snap.forEach(doc=>{
+      let d=doc.data();
+      if(d.status==='Lunas') total+=d.jumlah;
+      if(d.status==='Belum Bayar' && d.created>now-7*86400000){
+        jatuhTempo+=`<tr><td>${d.nama}</td><td>${d.akun_user}</td><td>${d.bulan}</td><td>${rupiah(d.jumlah)}</td></tr>`;
+      }
+      html+=`<tr><td>${d.nama}</td><td>${d.akun_user}</td><td>${d.bulan}</td>
+      <td>${rupiah(d.jumlah)}</td>
+      <td><span class="badge ${d.status==='Belum Bayar'?'b-unpaid':'b-paid'}">${d.status}</span></td>
+      <td>${d.status==='Belum Bayar'?`<button onclick="bayarTagihan('${doc.id}','${d.akun_id}',${d.jumlah})">Bayar</button>`:''}</td></tr>`;
+    });
+    tblTagih.querySelector('tbody').innerHTML=html;
+    tblJatuhTempo.querySelector('tbody').innerHTML=jatuhTempo;
+    belumBayar.textContent=snap.docs.filter(d=>d.data().status==='Belum Bayar').length;
+    pendapatan.textContent=rupiah(total);
+  });
+}
+
+window.bayarTagihan = async (id,akunId,jumlah) => {
+  await updateDoc(doc(db,"tagihan",id),{status:'Lunas',bayar_at:Date.now()});
+  let pppoeRef = doc(db,"pppoe",akunId);
+  let pppoeSnap = await getDocs(collection(db,"pppoe"));
+  let pppoe = pppoeSnap.docs.find(d=>d.id==akunId);
+  let pakSnap = await getDocs(collection(db,"paket"));
+  let pak = pakSnap.docs.find(d=>d.id==pppoe.data().paket_id);
+
+  let newExpired = Math.max(pppoe.data().expired, Date.now()) + pak.data().hari*86400000;
+  await updateDoc(pppoeRef,{expired:newExpired});
+
+  showStruk(pppoe.data(), jumlah);
+}
+
+function showStruk(data, jumlah){
+  strukContent.innerHTML=`
+    <h3 style="text-align:center">Netbil Pro v2 Ultra</h3>
+    <p style="text-align:center;color:var(--muted)">Bukti Pembayaran</p>
+    <hr style="margin:16px 0;border-color:var(--border)">
+    <p><strong>Nama:</strong> ${data.nama}</p>
+    <p><strong>Username:</strong> ${data.username}</p>
+    <p><strong>Paket:</strong> ${data.paket_nama}</p>
+    <p><strong>Jumlah:</strong> ${rupiah(jumlah)}</p>
+    <p><strong>Tanggal:</strong> ${new Date().toLocaleString('id-ID')}</p>
+    <hr style="margin:16px 0;border-color:var(--border)">
+    <p style="text-align:center;color:var(--muted)">Terima kasih</p>
+  `;
+  modalStruk.classList.add('active');
+}
+
+window.printStruk = () => window.print();
+window.closeModal = () => modalStruk.classList.remove('active');
+
+// Voucher
+window.genVoucher = async () => {
+  let pakSnap = await getDocs(collection(db,"paket"));
+  let pak = pakSnap.docs.find(d=>d.id==vPaket.value);
+  if(!pak) return alert('Pilih paket');
+  for(let i=0;i<vQty.value;i++){
+    let code=Math.random().toString(36).substring(2,10).toUpperCase();
+    await addDoc(collection(db,"voucher"),{code:code,paket:pak.data().nama,status:'Unused',created:Date.now()});
+  }
+  alert(vQty.value+' voucher dibuat');
+}
+
+window.loadVoucher = () => {
+  onSnapshot(collection(db,"voucher"),(snap)=>{
+    let html='';
+    snap.forEach(doc=>{
+      let d=doc.data();
+      html+=`<tr><td>${d.code}</td><td>${d.paket}</td><td>${d.status}</td>
+      <td><button class="ghost" onclick="delVou('${doc.id}')">Hapus</button></td></tr>`;
+    });
+    tblVoucher.querySelector('tbody').innerHTML=html;
+  });
+}
+
+window.delVou = async (id) => {
+  if(confirm('Hapus voucher ini?')) await deleteDoc(doc(db,"voucher",id));
+}
+
+// Export Excel sederhana
+window.exportTagihan = () => {
+  getDocs(collection(db,"tagihan")).then(snap=>{
+    let csv="Nama,Akun,Bulan,Jumlah,Status\n";
+    snap.forEach(d=>{
+      let x=d.data();
+      csv+=`${x.nama},${x.akun_user},${x.bulan},${x.jumlah},${x.status}\n`;
+    });
+    let blob=new Blob([csv],{type:'text/csv'});
+    let a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='tagihan-netbil.csv';
+    a.click();
+  });
+}
+
+function loadAll(){
+  loadPelanggan();
+  loadPaket();
+  loadPPPoE();
+  loadTagihan();
+  loadVoucher();
+}
+</script>
+</body>
+</html>
 
