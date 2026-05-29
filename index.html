@@ -1,1215 +1,412 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>NetBill • Manajemen Tagihan WiFi RT/RW</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<style>
-  :root { color-scheme: light; }
-  * { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-  html, body { background: #f5f7fb; }
-  .scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
-  .scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-  .scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-  .card { background: white; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(15,23,42,.04); }
-  .btn { display:inline-flex; align-items:center; gap:.5rem; font-weight:500; border-radius:.6rem; padding:.55rem .9rem; transition:.15s; }
-  .btn-primary { background:#2563eb; color:white; }
-  .btn-primary:hover { background:#1d4ed8; }
-  .btn-secondary { background:#f1f5f9; color:#0f172a; }
-  .btn-secondary:hover { background:#e2e8f0; }
-  .btn-ghost { background:transparent; color:#475569; }
-  .btn-ghost:hover { background:#f1f5f9; }
-  .btn-danger { background:#ef4444; color:white; }
-  .btn-danger:hover { background:#dc2626; }
-  .input, .select, .textarea { width:100%; border:1px solid #cbd5e1; border-radius:.6rem; padding:.6rem .8rem; background:white; outline:none; }
-  .input:focus, .select:focus, .textarea:focus { border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.15); }
-  .badge { font-size:.7rem; padding:.2rem .5rem; border-radius:999px; font-weight:600; }
-  .badge-green { background:#dcfce7; color:#166534; }
-  .badge-yellow { background:#fef9c3; color:#854d0e; }
-  .badge-red { background:#fee2e2; color:#991b1b; }
-  .badge-gray { background:#f1f5f9; color:#334155; }
-  @media print {
-    body * { visibility: hidden !important; }
-    #invoice-print, #invoice-print * { visibility: visible !important; }
-    #invoice-print { position: absolute; left:0; top:0; width:148mm; min-height:210mm; padding:16mm; background:white; }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WiFi-Net Pro: Billing Online Cloud</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="text-slate-800 antialiased">
-<div id="app" class="hidden min-h-screen">
-  <!-- Sidebar -->
-  <aside id="sidebar" class="fixed z-40 inset-y-0 left-0 w-[260px] bg-white border-r border-slate-200 flex flex-col transition-transform -translate-x-full lg:translate-x-0">
-    <div class="h-16 flex items-center gap-3 px-5 border-b border-slate-200">
-      <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white">
-        <i data-lucide="wifi" class="w-5 h-5"></i>
-      </div>
-      <div>
-        <div class="font-bold leading-tight">NetBill</div>
-        <div class="text-xs text-slate-500 -mt-0.5">RT/RW Net Manager</div>
-      </div>
-    </div>
-    <nav class="flex-1 p-3 space-y-1 overflow-y-auto scrollbar">
-      <button data-page="dashboard" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-100">
-        <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
-      </button>
-      <button data-page="customers" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-100">
-        <i data-lucide="users" class="w-5 h-5"></i> Pelanggan
-      </button>
-      <button data-page="packages" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-100">
-        <i data-lucide="package" class="w-5 h-5"></i> Paket Internet
-      </button>
-      <button data-page="bills" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-100">
-        <i data-lucide="file-text" class="w-5 h-5"></i> Tagihan
-      </button>
-      <button data-page="reports" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-100">
-        <i data-lucide="bar-chart-3" class="w-5 h-5"></i> Laporan
-      </button>
-      <button data-page="settings" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-100">
-        <i data-lucide="settings" class="w-5 h-5"></i> Pengaturan
-      </button>
-    </nav>
-    <div class="p-3 border-t border-slate-200">
-      <div class="text-xs text-slate-500 px-3 pb-2">ISP Aktif</div>
-      <div id="sidebar-isp" class="px-3 text-sm font-medium truncate">-</div>
-    </div>
-  </aside>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex">
 
-  <!-- Overlay mobile -->
-  <div id="sidebar-overlay" class="fixed inset-0 bg-black/30 z-30 hidden lg:hidden"></div>
-
-  <!-- Main -->
-  <div class="lg:pl-[260px] min-h-screen flex flex-col">
-    <!-- Topbar -->
-    <header class="sticky top-0 z-20 h-16 bg-white border-b border-slate-200 flex items-center px-4 lg:px-6 gap-3">
-      <button id="btn-menu" class="lg:hidden btn-ghost btn !p-2"><i data-lucide="menu" class="w-5 h-5"></i></button>
-      <h1 id="page-title" class="text-lg font-semibold flex-1">Dashboard</h1>
-      <div class="flex items-center gap-2">
-        <button id="btn-refresh" class="btn-ghost btn !p-2" title="Refresh"><i data-lucide="refresh-ccw" class="w-5 h-5"></i></button>
-        <div class="w-px h-6 bg-slate-200 mx-1"></div>
-        <div class="text-right hidden sm:block">
-          <div id="topbar-user-name" class="text-sm font-medium leading-tight">-</div>
-          <div id="topbar-user-email" class="text-xs text-slate-500 -mt-0.5">-</div>
-        </div>
-        <div class="w-9 h-9 rounded-full bg-slate-800 text-white flex items-center justify-center font-semibold" id="topbar-avatar">A</div>
-        <button id="btn-logout" class="btn-secondary btn !py-2"><i data-lucide="log-out" class="w-4 h-4"></i><span class="hidden sm:inline">Keluar</span></button>
-      </div>
-    </header>
-
-    <!-- Content -->
-    <main class="flex-1 p-4 lg:p-6 space-y-6">
-      <!-- DASHBOARD -->
-      <section id="page-dashboard" class="page space-y-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <div class="card rounded-2xl p-5">
-            <div class="flex items-start justify-between">
-              <div>
-                <div class="text-sm text-slate-500">Total Pelanggan</div>
-                <div id="stat-customers" class="text-3xl font-bold mt-1">0</div>
-              </div>
-              <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><i data-lucide="users" class="w-5 h-5"></i></div>
+    <aside class="w-64 bg-slate-950 border-r border-slate-800 p-6 flex flex-col justify-between hidden md:flex">
+        <div>
+            <div class="flex items-center space-x-3 mb-10">
+                <div class="bg-indigo-600 p-2 rounded-lg text-white">
+                    <i class="fa-solid fa-tower-cell text-xl"></i>
+                </div>
+                <span class="text-xl font-bold tracking-wider text-white">WIFI-NET <span class="text-indigo-500">PRO</span></span>
             </div>
-            <div class="text-xs text-slate-500 mt-3">Aktif: <span id="stat-customers-active">0</span></div>
-          </div>
-          <div class="card rounded-2xl p-5">
-            <div class="flex items-start justify-between">
-              <div>
-                <div class="text-sm text-slate-500">Tagihan Bulan Ini</div>
-                <div id="stat-bills-total" class="text-3xl font-bold mt-1">Rp 0</div>
-              </div>
-              <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center"><i data-lucide="wallet" class="w-5 h-5"></i></div>
-            </div>
-            <div class="text-xs text-slate-500 mt-3"><span id="stat-bills-count">0</span> tagihan</div>
-          </div>
-          <div class="card rounded-2xl p-5">
-            <div class="flex items-start justify-between">
-              <div>
-                <div class="text-sm text-slate-500">Lunas</div>
-                <div id="stat-paid" class="text-3xl font-bold mt-1 text-emerald-600">Rp 0</div>
-              </div>
-              <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><i data-lucide="check-circle" class="w-5 h-5"></i></div>
-            </div>
-            <div class="text-xs text-slate-500 mt-3"><span id="stat-paid-count">0</span> tagihan</div>
-          </div>
-          <div class="card rounded-2xl p-5">
-            <div class="flex items-start justify-between">
-              <div>
-                <div class="text-sm text-slate-500">Belum Bayar</div>
-                <div id="stat-unpaid" class="text-3xl font-bold mt-1 text-amber-600">Rp 0</div>
-              </div>
-              <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div>
-            </div>
-            <div class="text-xs text-slate-500 mt-3"><span id="stat-unpaid-count">0</span> tagihan</div>
-          </div>
+            
+            <nav class="space-y-2">
+                <button onclick="gantiMenu('dashboard')" id="menu-dashboard" class="w-full flex items-center space-x-3 bg-indigo-600/10 text-indigo-400 p-3 rounded-lg font-semibold transition cursor-pointer text-left">
+                    <i class="fa-solid fa-chart-pie w-5"></i> <span>Dashboard</span>
+                </button>
+                <button onclick="gantiMenu('pelanggan')" id="menu-pelanggan" class="w-full flex items-center space-x-3 text-slate-400 hover:bg-slate-800/50 hover:text-white p-3 rounded-lg transition cursor-pointer text-left">
+                    <i class="fa-solid fa-user-gear w-5"></i> <span>Kelola Pelanggan</span>
+                </button>
+                <button onclick="gantiMenu('riwayat')" id="menu-riwayat" class="w-full flex items-center space-x-3 text-slate-400 hover:bg-slate-800/50 hover:text-white p-3 rounded-lg transition cursor-pointer text-left">
+                    <i class="fa-solid fa-file-invoice-dollar w-5"></i> <span>Riwayat Transaksi</span>
+                </button>
+            </nav>
         </div>
+        <div class="text-xs text-slate-500 border-t border-slate-800 pt-4">
+            Version 3.0 (Firebase Cloud Online)
+        </div>
+    </aside>
 
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          <div class="card rounded-2xl p-5 xl:col-span-2">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="font-semibold">Pendapatan 6 Bulan Terakhir</h3>
-              <span class="text-xs text-slate-500">Lunas per bulan</span>
-            </div>
-            <canvas id="chart-revenue" height="120"></canvas>
-          </div>
-          <div class="card rounded-2xl p-5">
-            <h3 class="font-semibold mb-4">Status Pembayaran</h3>
-            <canvas id="chart-status" height="180"></canvas>
-          </div>
-        </div>
-      </section>
-
-      <!-- CUSTOMERS -->
-      <section id="page-customers" class="page hidden space-y-4">
-        <div class="card rounded-2xl p-4">
-          <div class="flex flex-col md:flex-row gap-3 md:items-center">
-            <div class="flex-1 flex gap-2">
-              <div class="relative flex-1">
-                <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input id="customers-search" class="input pl-9" placeholder="Cari nama, alamat, HP..." />
-              </div>
-              <select id="customers-filter-status" class="select w-40">
-                <option value="">Semua Status</option>
-                <option>Aktif</option>
-                <option>Nonaktif</option>
-              </select>
-            </div>
-            <button id="btn-add-customer" class="btn-primary btn"><i data-lucide="plus" class="w-4 h-4"></i> Tambah Pelanggan</button>
-          </div>
-        <div class="card rounded-2xl overflow-hidden">
-          <div class="overflow-x-auto scrollbar">
-            <table class="min-w-full text-sm">
-              <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
-                <tr>
-                  <th class="text-left px-4 py-3 font-semibold">ID</th>
-                  <th class="text-left px-4 py-3 font-semibold">Nama</th>
-                  <th class="text-left px-4 py-3 font-semibold">Alamat</th>
-                  <th class="text-left px-4 py-3 font-semibold">HP</th>
-                  <th class="text-left px-4 py-3 font-semibold">Paket</th>
-                  <th class="text-left px-4 py-3 font-semibold">Status</th>
-                  <th class="text-right px-4 py-3 font-semibold">Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="customers-tbody" class="divide-y divide-slate-100"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- PACKAGES -->
-      <section id="page-packages" class="page hidden space-y-4">
-        <div class="flex justify-between items-center">
-          <h2 class="text-lg font-semibold">Daftar Paket Internet</h2>
-          <button id="btn-add-package" class="btn-primary btn"><i data-lucide="plus" class="w-4 h-4"></i> Tambah Paket</button>
-        </div>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="packages-grid"></div>
-      </section>
-
-      <!-- BILLS -->
-      <section id="page-bills" class="page hidden space-y-4">
-        <div class="card rounded-2xl p-4">
-          <div class="flex flex-col lg:flex-row gap-3 lg:items-center">
-            <div class="flex gap-2 flex-1">
-              <select id="bills-filter-month" class="select w-40"></select>
-              <select id="bills-filter-year" class="select w-32"></select>
-              <select id="bills-filter-status" class="select w-44">
-                <option value="">Semua Status</option>
-                <option>Lunas</option>
-                <option>Belum Bayar</option>
-                <option>Jatuh Tempo</option>
-              </select>
-            </div>
-            <div class="flex gap-2">
-              <button id="btn-generate-bills" class="btn-secondary btn"><i data-lucide="zap" class="w-4 h-4"></i> Generate Massal</button>
-              <button id="btn-refresh-bills" class="btn-ghost btn"><i data-lucide="refresh-ccw" class="w-4 h-4"></i></button>
-            </div>
-          </div>
-        <div class="card rounded-2xl overflow-hidden">
-          <div class="overflow-x-auto scrollbar">
-            <table class="min-w-full text-sm">
-              <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
-                <tr>
-                  <th class="text-left px-4 py-3 font-semibold">Periode</th>
-                  <th class="text-left px-4 py-3 font-semibold">Pelanggan</th>
-                  <th class="text-left px-4 py-3 font-semibold">Paket</th>
-                  <th class="text-right px-4 py-3 font-semibold">Jumlah</th>
-                  <th class="text-left px-4 py-3 font-semibold">Jatuh Tempo</th>
-                  <th class="text-left px-4 py-3 font-semibold">Status</th>
-                  <th class="text-right px-4 py-3 font-semibold">Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="bills-tbody" class="divide-y divide-slate-100"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- REPORTS -->
-      <section id="page-reports" class="page hidden space-y-4">
-        <div class="card rounded-2xl p-4 flex flex-col md:flex-row gap-3 md:items-end">
-          <div>
-            <label class="text-xs text-slate-600">Dari</label>
-            <input id="report-from" type="date" class="input" />
-          </div>
-          <div>
-            <label class="text-xs text-slate-600">Sampai</label>
-            <input id="report-to" type="date" class="input" />
-          </div>
-          <button id="btn-report-run" class="btn-primary btn"><i data-lucide="filter" class="w-4 h-4"></i> Terapkan</button>
-          <div class="flex-1"></div>
-          <button id="btn-report-csv" class="btn-secondary btn"><i data-lucide="download" class="w-4 h-4"></i> Export CSV</button>
-          <button id="btn-report-print" class="btn-secondary btn"><i data-lucide="printer" class="w-4 h-4"></i> Print</button>
-        </div>
-        <div class="card rounded-2xl overflow-hidden">
-          <div class="overflow-x-auto scrollbar">
-            <table class="min-w-full text-sm" id="report-table">
-              <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
-                <tr>
-                  <th class="text-left px-4 py-3 font-semibold">Tanggal Bayar</th>
-                  <th class="text-left px-4 py-3 font-semibold">Pelanggan</th>
-                  <th class="text-left px-4 py-3 font-semibold">Periode</th>
-                  <th class="text-right px-4 py-3 font-semibold">Jumlah</th>
-                  <th class="text-left px-4 py-3 font-semibold">Metode</th>
-                  <th class="text-left px-4 py-3 font-semibold">Catatan</th>
-                </tr>
-              </thead>
-              <tbody id="report-tbody" class="divide-y divide-slate-100"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- SETTINGS -->
-      <section id="page-settings" class="page hidden space-y-6 max-w-5xl">
-        <div class="grid lg:grid-cols-2 gap-6">
-          <div class="card rounded-2xl p-6 space-y-4">
-            <h3 class="font-semibold flex items-center gap-2"><i data-lucide="building" class="w-5 h-5 text-blue-600"></i> Profil ISP</h3>
+    <main class="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl mx-auto">
+        
+        <header class="flex justify-between items-center mb-8 border-b border-slate-800 pb-4">
             <div>
-              <label class="text-sm text-slate-600">Nama ISP</label>
-              <input id="set-isp-name" class="input" placeholder="NetBill RT/RW" />
+                <h1 class="text-2xl font-bold text-white" id="pageTitle">Dashboard Utama</h1>
+                <p class="text-sm text-slate-400">Memantau keuangan berbasis Cloud Database Real-time.</p>
             </div>
-            <div>
-              <label class="text-sm text-slate-600">Alamat</label>
-              <textarea id="set-isp-address" class="textarea" rows="2" placeholder="Jl. ..."></textarea>
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-semibold text-white">Admin Cloud</p>
+                    <p class="text-xs text-emerald-400 font-medium"><i class="fa-solid fa-cloud mr-1"></i> Terhubung ke Firebase</p>
+                </div>
+                <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center font-bold text-white shadow-md">
+                    A
+                </div>
             </div>
-            <div>
-              <label class="text-sm text-slate-600">Logo URL (opsional)</label>
-              <input id="set-isp-logo" class="input" placeholder="https://..." />
-            </div>
-            <div>
-              <label class="text-sm text-slate-600">No. HP Admin (untuk WA)</label>
-              <input id="set-isp-phone" class="input" placeholder="08..." />
-            </div>
-            <button id="btn-save-isp" class="btn-primary btn">Simpan Profil</button>
-          </div>
+        </header>
 
-          <div class="card rounded-2xl p-6 space-y-4">
-            <h3 class="font-semibold flex items-center gap-2"><i data-lucide="message-circle" class="w-5 h-5 text-emerald-600"></i> Template WhatsApp</h3>
-            <div>
-              <label class="text-sm text-slate-600">Template Tagihan</label>
-              <textarea id="set-wa-tagihan" class="textarea" rows="4"></textarea>
-              <p class="text-xs text-slate-500 mt-1">Variable: {nama}, {periode}, {jumlah}, {jatuh_tempo}, {isp}</p>
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Total Pelanggan</p>
+                    <h3 class="text-3xl font-black text-white" id="statTotal">0</h3>
+                </div>
+                <div class="bg-blue-500/10 text-blue-400 p-4 rounded-xl"><i class="fa-solid fa-users text-2xl"></i></div>
             </div>
-            <div>
-              <label class="text-sm text-slate-600">Template Pembayaran Diterima</label>
-              <textarea id="set-wa-bayar" class="textarea" rows="4"></textarea>
-              <p class="text-xs text-slate-500 mt-1">Variable: {nama}, {periode}, {jumlah}, {tanggal}, {isp}</p>
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Total Omset (Lunas)</p>
+                    <h3 class="text-3xl font-black text-green-400" id="statOmset">Rp 0</h3>
+                </div>
+                <div class="bg-green-500/10 text-green-400 p-4 rounded-xl"><i class="fa-solid fa-wallet text-2xl"></i></div>
             </div>
-            <button id="btn-save-wa" class="btn-primary btn">Simpan Template</button>
-          </div>
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Piutang (Tertunggak)</p>
+                    <h3 class="text-3xl font-black text-red-400" id="statPiutang">Rp 0</h3>
+                </div>
+                <div class="bg-red-500/10 text-red-400 p-4 rounded-xl"><i class="fa-solid fa-hand-holding-dollar text-2xl"></i></div>
+            </div>
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Isolasi Jaringan</p>
+                    <h3 class="text-3xl font-black text-amber-500" id="statIsolasi">0 User</h3>
+                </div>
+                <div class="bg-amber-500/10 text-amber-400 p-4 rounded-xl"><i class="fa-solid fa-user-slash text-2xl"></i></div>
+            </div>
+        </section>
+
+        <div id="dashboardView" class="block space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 lg:col-span-2">
+                    <h3 class="text-lg font-bold text-white mb-4"><i class="fa-solid fa-chart-line mr-2 text-indigo-500"></i> Grafik Keuangan Real-time</h3>
+                    <div class="h-64">
+                        <canvas id="financeChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex flex-col justify-center items-center text-center p-8">
+                    <i class="fa-solid fa-cloud-arrow-up text-4xl text-emerald-400 mb-4 animate-bounce"></i>
+                    <h4 class="text-md font-bold text-white mb-2">Sistem Database Aktif</h4>
+                    <p class="text-xs text-slate-400 leading-relaxed">Aplikasi ini sekarang terhubung ke Google Firebase. Data yang Anda masukkan akan langsung tersinkronisasi di HP, laptop admin, dan kasir secara otomatis.</p>
+                </div>
+            </div>
         </div>
 
-        <div class="card rounded-2xl p-6 space-y-4">
-          <h3 class="font-semibold flex items-center gap-2"><i data-lucide="database" class="w-5 h-5 text-indigo-600"></i> Konfigurasi Firebase</h3>
-          <p class="text-sm text-slate-600">Ganti placeholder di kode dengan config Anda. Form ini hanya untuk melihat & menyimpan salinan di pengaturan lokal.</p>
-          <div class="grid md:grid-cols-2 gap-3">
-            <input id="set-fb-apikey" class="input" placeholder="apiKey" />
-            <input id="set-fb-authdomain" class="input" placeholder="authDomain" />
-            <input id="set-fb-projectid" class="input" placeholder="projectId" />
-            <input id="set-fb-bucket" class="input" placeholder="storageBucket" />
-            <input id="set-fb-senderid" class="input" placeholder="messagingSenderId" />
-            <input id="set-fb-appid" class="input" placeholder="appId" />
-          </div>
-          <button id="btn-save-fb" class="btn-secondary btn">Simpan ke Pengaturan</button>
+        <div id="pelangganView" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 h-fit">
+                <h3 class="text-lg font-bold text-white mb-4 flex items-center"><i class="fa-solid fa-user-plus text-indigo-500 mr-2"></i> Input Data Pelanggan</h3>
+                <form id="proForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                    <input type="hidden" id="customerId">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nama Lengkap</label>
+                        <input type="text" id="custName" required class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-white focus:border-indigo-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">WhatsApp (Format: 628xx)</label>
+                        <input type="tel" id="custWA" placeholder="62812345678" required class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-white focus:border-indigo-500 outline-none transition">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Paket Bandwidth</label>
+                            <select id="custPaket" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-white focus:border-indigo-500 outline-none transition">
+                                <option value="150000|Home-5Mbps">Home 5 Mbps (150rb)</option>
+                                <option value="250000|Biz-15Mbps">Biz 15 Mbps (250rb)</option>
+                                <option value="400000|Ultima-30Mbps">Ultima 30 Mbps (400rb)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tgl Jatuh Tempo</label>
+                            <input type="number" id="custTempo" min="1" max="28" value="5" required class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-white focus:border-indigo-500 outline-none transition">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition duration-150 cursor-pointer">
+                        <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Simpan ke Cloud
+                    </button>
+                    <button type="button" onclick="clearForm()" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-400 text-sm py-2 rounded-xl transition">
+                        Batal
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 lg:col-span-2">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-network-wired mr-2 text-indigo-500"></i> Konsol Kontrol Pelanggan</h3>
+                    <div class="w-full sm:w-64 relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-slate-500 text-sm"></i>
+                        <input type="text" id="searchBar" oninput="liveSearch()" placeholder="Cari pelanggan..." class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:border-indigo-500 outline-none transition">
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400 text-xs font-bold uppercase tracking-wider bg-slate-900/50">
+                                <th class="p-4">Nama Pelanggan</th>
+                                <th class="p-4">Paket</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4 text-center">Aksi Operasional</th>
+                            </tr>
+                        </thead>
+                        <tbody id="crmTable" class="text-sm text-slate-300 divide-y divide-slate-800/60">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-      </section>
+
+        <div id="riwayatView" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-6">
+            <h3 class="text-lg font-bold text-white mb-4"><i class="fa-solid fa-clock-rotate-left mr-2 text-indigo-500"></i> Log Riwayat Pembayaran Terakhir</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-slate-400 text-xs font-bold uppercase bg-slate-900/50">
+                            <th class="p-4">Pelanggan</th>
+                            <th class="p-4">Nominal</th>
+                            <th class="p-4">Tanggal Update Status</th>
+                            <th class="p-4">Status Terakhir</th>
+                        </tr>
+                    </thead>
+                    <tbody id="riwayatTable" class="text-sm text-slate-300 divide-y divide-slate-800/60">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
     </main>
 
-    <footer class="px-6 py-4 text-xs text-slate-500 border-t border-slate-200 bg-white">
-      © <span id="year"></span> NetBill • Dibuat untuk admin RT/RW Net
-    </footer>
-  </div>
-</div>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-<!-- AUTH SCREEN -->
-<div id="auth-screen" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 to-slate-100">
-  <div class="w-full max-w-md">
-    <div class="text-center mb-6">
-      <div class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center mx-auto mb-3"><i data-lucide="wifi" class="w-7 h-7"></i></div>
-      <h1 class="text-2xl font-bold">Masuk ke NetBill</h1>
-      <p class="text-slate-600 text-sm">Manajemen tagihan WiFi RT/RW Net</p>
-    </div>
-    <div class="card rounded-2xl p-6 space-y-4">
-      <div>
-        <label class="text-sm text-slate-700">Email</label>
-        <input id="auth-email" type="email" class="input" placeholder="admin@netbill.local" />
-      </div>
-      <div>
-        <label class="text-sm text-slate-700">Password</label>
-        <input id="auth-password" type="password" class="input" placeholder="••••••••" />
-      </div>
-      <button id="btn-login" class="btn-primary btn w-full justify-center py-3">Masuk</button>
-      <div id="auth-error" class="hidden text-sm text-red-600 bg-red-50 border-red-200 rounded-lg p-3"></div>
-      <div class="text-xs text-slate-500 bg-amber-50 border border-amber-200 rounded-lg p-3">
-        Demo mode aktif jika Firebase belum dikonfigurasi. Gunakan email & password apa saja.
-      </div>
-    </div>
-  </div>
-</div>
+    <script>
+        // Konfigurasi Firebase Milik Anda (Sudah Terpasang)
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5iWDJLLz81QUDDLIdD4ApPjhoSrLKeP4",
+            authDomain: "billingorg-internet.firebaseapp.com",
+            projectId: "billingorg-internet",
+            storageBucket: "billingorg-internet.firebasestorage.app",
+            messagingSenderId: "519438699306",
+            appId: "1:519438699306:web:4b5b3d3801d50d98e96c53"
+        };
 
-<!-- MODALS -->
-<div id="modal" class="fixed inset-0 z-50 hidden">
-  <div class="absolute inset-0 bg-black/40"></div>
-  <div class="relative z-10 min-h-full flex items-center justify-center p-4">
-    <div class="card rounded-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-        <h3 id="modal-title" class="font-semibold text-lg">Modal</h3>
-        <button id="modal-close" class="btn-ghost btn !p-2"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <div id="modal-body" class="p-5 overflow-y-auto scrollbar space-y-4"></div>
-      <div id="modal-footer" class="px-5 py-4 border-t border-slate-200 flex justify-end gap-2"></div>
-    </div>
-  </div>
-</div>
+        // Inisialisasi Koneksi Cloud Google
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-<!-- TOAST -->
-<div id="toast-container" class="fixed bottom-4 right-4 z-[100] space-y-2"></div>
+        // Variabel global penampung data cloud
+        let cloudDB = [];
 
-<!-- INVOICE PRINT -->
-<div id="invoice-print" class="hidden print:block bg-white text-slate-900">
-  <div class="max-w-[148mm] mx-auto">
-    <div class="flex items-start justify-between border-b-2 border-slate-900 pb-4 mb-4">
-      <div>
-        <h1 class="text-2xl font-bold" id="inv-isp-name">NetBill</h1>
-        <div class="text-sm" id="inv-isp-address"></div>
-        <div class="text-sm" id="inv-isp-phone"></div>
-      </div>
-      <div class="text-right">
-        <div class="text-xs uppercase tracking-wider text-slate-600">Invoice Tagihan Internet</div>
-        <div class="text-lg font-semibold" id="inv-number"># INV-0001</div>
-      </div>
-    </div>
-    <div class="grid grid-cols-2 gap-6 mb-6">
-      <div>
-        <div class="text-xs uppercase text-slate-500 mb-1">Pelanggan</div>
-        <div class="font-semibold" id="inv-customer-name">-</div>
-        <div class="text-sm" id="inv-customer-address">-</div>
-        <div class="text-sm" id="inv-customer-phone">-</div>
-      </div>
-      <div class="text-right">
-        <div class="text-xs uppercase text-slate-500 mb-1">Periode</div>
-        <div class="font-semibold" id="inv-period">-</div>
-        <div class="text-sm">Jatuh Tempo: <span id="inv-due">-</span></div>
-        <div class="text-sm">Status: <span id="inv-status" class="font-semibold">-</span></div>
-      </div>
-    <table class="w-full text-sm mb-6">
-      <thead>
-        <tr class="border-b border-slate-300">
-          <th class="text-left py-2">Deskripsi</th>
-          <th class="text-right py-2">Jumlah</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="py-2" id="inv-package">Paket Internet</td>
-          <td class="text-right py-2 font-semibold" id="inv-amount">Rp 0</td>
-        </tr>
-      </tbody>
-      <tfoot>
-        <tr class="border-t-2 border-slate-900">
-          <td class="py-2 font-bold">TOTAL</td>
-          <td class="text-right py-2 font-bold text-lg" id="inv-total">Rp 0</td>
-        </tr>
-      </tfoot>
-    </table>
-    <div class="text-xs text-slate-600 border-t pt-4">
-      Terima kasih telah menggunakan layanan kami. Pembayaran dapat dilakukan via transfer atau tunai ke admin.
-    </div>
-  </div>
-</div>
+        // === LOGIKA NAVIGASI MENU ===
+        function gantiMenu(target) {
+            const v1 = document.getElementById('dashboardView');
+            const v2 = document.getElementById('pelangganView');
+            const v3 = document.getElementById('riwayatView');
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } 
-  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, onSnapshot } 
-  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+            v1.style.display = 'none';
+            v2.style.display = 'none';
+            v3.style.display = 'none';
 
-// GANTI INI PAKAI CONFIG DARI FIREBASE LO
-const firebaseConfig = {
-  apiKey: "AIzaSyB5iWDJLLz81QUDDLIdD4ApPjhoSrLKeP4",
-  authDomain: "billingorg-internet.firebaseapp.com",
-  projectId: "billingorg-internet",
-  storageBucket: "billingorg-internet.firebasestorage.app",
-  messagingSenderId: "519438699306",
-  appId: "1:519438699306:web:4b5b3d3801d50d98e96c53"
+            if(target === 'dashboard') v1.style.display = 'block';
+            if(target === 'pelanggan') v2.style.display = 'grid';
+            if(target === 'riwayat') v3.style.display = 'block';
 
-/* ==================== UTILITIES ==================== */
-const $ = s => document.querySelector(s);
-const $$ = s => [...document.querySelectorAll(s)];
-const fmtRp = n => new Intl.NumberFormat('id-ID', { style:'currency', currency:'IDR', maximumFractionDigits:0 }).format(n||0);
-const fmtDate = d => new Date(d).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
-const fmtDateInput = d => new Date(d).toISOString().slice(0,10);
-const uid = () => Math.random().toString(36).slice(2,10);
-const phoneToWa = p => {
-  let s = (p||'').replace(/\D/g,'');
-  if(s.startsWith('0')) s = '62'+s.slice(1);
-  if(!s.startsWith('62')) s = '62'+s;
-  return s;
-};
-const toast = (msg, type='success') => {
-  const el = document.createElement('div');
-  el.className = `card rounded-xl px-4 py-3 shadow-lg text-sm flex items-center gap-2 ${type==='error'?'border-red-200 bg-red-50 text-red-700':'border-emerald-200 bg-emerald-50 text-emerald-700'}`;
-  el.innerHTML = `<i data-lucide="${type==='error'?'alert-circle':'check-circle'}" class="w-4 h-4"></i><span>${msg}</span>`;
-  $('#toast-container').appendChild(el);
-  lucide.createIcons();
-  setTimeout(()=> el.remove(), 3500);
-};
+            document.getElementById('pageTitle').innerText = { 'dashboard': 'Dashboard Utama', 'pelanggan': 'Kelola Data Jaringan', 'riwayat': 'Laporan Riwayat Keuangan' }[target];
 
-/* ==================== DATA SERVICE ==================== */
-let dataService, authService;
+            document.querySelectorAll('aside nav button').forEach(l => {
+                l.classList.remove('bg-indigo-600/10', 'text-indigo-400');
+                l.classList.add('text-slate-400');
+            });
+            document.getElementById('menu-' + target).classList.add('bg-indigo-600/10', 'text-indigo-400');
+            document.getElementById('menu-' + target).classList.remove('text-slate-400');
+        }
 
-function createMockService(){
-  const store = {
-    customers: JSON.parse(localStorage.getItem('netbill_customers')||'[]'),
-    packages: JSON.parse(localStorage.getItem('netbill_packages')||'[]'),
-    bills: JSON.parse(localStorage.getItem('netbill_bills')||'[]'),
-    payments: JSON.parse(localStorage.getItem('netbill_payments')||'[]'),
-    settings: JSON.parse(localStorage.getItem('netbill_settings')||'{}')
-  };
-  const save = k => localStorage.setItem('netbill_'+k, JSON.stringify(store[k]));
-  return {
-    async init(){ if(store.packages.length===0){ await seed(); } },
-    async getSettings(){ return store.settings; },
-    async saveSettings(s){ store.settings={...store.settings,...s}; save('settings'); },
-
-    async getPackages(){ return store.packages; },
-    async addPackage(p){ p.id=uid(); p.createdAt=Date.now(); store.packages.push(p); save('packages'); return p; },
-    async updatePackage(id,p){ Object.assign(store.packages.find(x=>x.id===id)||{},p); save('packages'); },
-    async deletePackage(id){ store.packages=store.packages.filter(x=>x.id!==id); save('packages'); },
-
-    async getCustomers(){ return store.customers; },
-    async addCustomer(c){ c.id='P'+String(store.customers.length+1).padStart(4,'0'); c.createdAt=Date.now(); store.customers.push(c); save('customers'); return c; },
-    async updateCustomer(id,c){ Object.assign(store.customers.find(x=>x.id===id)||{},c); save('customers'); },
-    async deleteCustomer(id){ store.customers=store.customers.filter(x=>x.id!==id); save('customers'); },
-
-    async getBills(filter={}){ 
-      let arr=[...store.bills];
-      if(filter.month) arr=arr.filter(b=>b.month===filter.month && b.year===filter.year);
-      if(filter.status) arr=arr.filter(b=>b.status===filter.status);
-      return arr.sort((a,b)=>b.createdAt-a.createdAt);
-    },
-    async addBill(b){ b.id=uid(); b.createdAt=Date.now(); store.bills.push(b); save('bills'); return b; },
-    async updateBill(id,b){ Object.assign(store.bills.find(x=>x.id===id)||{},b); save('bills'); },
-    async getBill(id){ return store.bills.find(x=>x.id===id); },
-
-    async getPayments(filter={}){ 
-      let arr=[...store.payments];
-      if(filter.from) arr=arr.filter(p=>p.date>=filter.from);
-      if(filter.to) arr=arr.filter(p=>p.date<=filter.to);
-      return arr.sort((a,b)=>b.date.localeCompare(a.date));
-    },
-    async addPayment(p){ p.id=uid(); store.payments.push(p); save('payments'); return p; },
-
-    async generateBills(month,year){
-      const pkgs = Object.fromEntries(store.packages.map(p=>[p.id,p]));
-      const existing = new Set(store.bills.filter(b=>b.month===month&&b.year===year).map(b=>b.customerId));
-      let count=0;
-      for(const c of store.customers.filter(c=>c.status==='Aktif')){
-        if(existing.has(c.id)) continue;
-        const pkg = pkgs[c.packageId];
-        if(!pkg) continue;
-        const due = new Date(year, month, 10).toISOString();
-        await this.addBill({
-          customerId:c.id,
-          customerName:c.name,
-          packageId:c.packageId,
-          packageName:pkg.name,
-          amount:pkg.price,
-          month, year,
-          dueDate:due,
-          status:'Belum Bayar'
+        // === INITIALIZE CHART GRAPHIC ===
+        const ctx = document.getElementById('financeChart').getContext('2d');
+        const financeChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Lunas (Omset)', 'Tertunggak (Piutang)'],
+                datasets: [{
+                    data: [0, 0],
+                    backgroundColor: ['rgba(34, 197, 94, 0.2)', 'rgba(239, 68, 68, 0.2)'],
+                    borderColor: ['rgb(34, 197, 94)', 'rgb(239, 68, 68)'],
+                    borderWidth: 2,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } }
+            }
         });
-        count++;
-      }
-      return count;
-    }
-  };
-  async function seed(){
-    const pkgs = [
-      {name:'Bronze', speed:'10 Mbps', price:100000},
-      {name:'Silver', speed:'20 Mbps', price:150000},
-      {name:'Gold', speed:'30 Mbps', price:200000},
-      {name:'Platinum', speed:'50 Mbps', price:300000},
-      {name:'Diamond', speed:'100 Mbps', price:500000},
-    ];
-    for(const p of pkgs) await dataService.addPackage(p);
-    const names = ['Budi Santoso','Siti Aminah','Agus Pratama','Dewi Lestari','Rudi Hartono','Lina Marlina','Joko Widodo','Ayu Kartika','Fajar Nugroho','Rina Wulandari','Hendra Gunawan','Maya Sari'];
-    for(let i=0;i<12;i++){
-      await dataService.addCustomer({
-        name:names[i],
-        address:`Jl. Merdeka No.${10+i} RT 0${i%5+1}`,
-        phone:'0812'+Math.floor(10000000+Math.random()*90000000),
-        packageId:store.packages[i%5].id,
-        status: i%7===0?'Nonaktif':'Aktif'
-      });
-    }
-    // seed bills for last 3 months
-    const now = new Date();
-    for(let k=2;k>=0;k--){
-      const d = new Date(now.getFullYear(), now.getMonth()-k,1);
-      await dataService.generateBills(d.getMonth(), d.getFullYear());
-    }
-    // mark some as paid
-    const bills = await dataService.getBills({});
-    for(const b of bills.slice(0, Math.floor(bills.length*0.6))){
-      await dataService.updateBill(b.id,{status:'Lunas'});
-      await dataService.addPayment({billId:b.id, amount:b.amount, method:'Transfer', date:fmtDateInput(Date.now()-Math.random()*1e9), note:'Otomatis'});
-    }
-  }
-}
 
-function createFirebaseService(db, auth){
-  const { collection, doc, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy } = window.firebase;
-  const col = n => collection(db,n);
-  return {
-    async init(){},
-    async getSettings(){ const s=await getDoc(doc(db,'settings','main')); return s.exists()?s.data():{}; },
-    async saveSettings(s){ await setDoc(doc(db,'settings','main'), s, {merge:true}); },
+        // === REAL-TIME LISTENER DARI FIREBASE GOOGLE ===
+        db.collection("customers").orderBy("nama").onSnapshot((snapshot) => {
+            cloudDB = [];
+            snapshot.forEach((doc) => {
+                cloudDB.push({ id: doc.id, ...doc.data() });
+            });
+            renderApp(cloudDB);
+        }, (error) => {
+            console.error("Gagal mendengarkan database cloud. Pastikan aturan Rule Firestore Anda diset ALLOW READ/WRITE.", error);
+        });
 
-    async getPackages(){ const snap=await getDocs(query(col('packages'), orderBy('price'))); return snap.docs.map(d=>({id:d.id,...d.data()})); },
-    async addPackage(p){ const r=await addDoc(col('packages'), {...p, createdAt:Date.now()}); return {id:r.id,...p}; },
-    async updatePackage(id,p){ await updateDoc(doc(db,'packages',id), p); },
-    async deletePackage(id){ await deleteDoc(doc(db,'packages',id)); },
+        // === RE-RENDER DASHBOARD & TABEL DATA ===
+        function renderApp(data) {
+            const crmTable = document.getElementById('crmTable');
+            const riwayatTable = document.getElementById('riwayatTable');
+            
+            crmTable.innerHTML = '';
+            riwayatTable.innerHTML = '';
 
-    async getCustomers(){ const snap=await getDocs(query(col('customers'), orderBy('createdAt','desc'))); return snap.docs.map(d=>({id:d.id,...d.data()})); },
-    async addCustomer(c){ const r=await addDoc(col('customers'), {...c, createdAt:Date.now()}); return {id:r.id,...c}; },
-    async updateCustomer(id,c){ await updateDoc(doc(db,'customers',id), c); },
-    async deleteCustomer(id){ await deleteDoc(doc(db,'customers',id)); },
+            let total = data.length;
+            let omset = 0;
+            let piutang = 0;
+            let isolasi = 0;
 
-    async getBills(filter={}){ 
-      const snap=await getDocs(query(col('bills'), orderBy('createdAt','desc')));
-      let arr=snap.docs.map(d=>({id:d.id,...d.data()}));
-      if(filter.month!==undefined) arr=arr.filter(b=>b.month===filter.month && b.year===filter.year);
-      if(filter.status) arr=arr.filter(b=>b.status===filter.status);
-      return arr;
-    },
-    async addBill(b){ const r=await addDoc(col('bills'), {...b, createdAt:Date.now()}); return {id:r.id,...b}; },
-    async updateBill(id,b){ await updateDoc(doc(db,'bills',id), b); },
-    async getBill(id){ const s=await getDoc(doc(db,'bills',id)); return s.exists()?{id:s.id,...s.data()}:null; },
+            if(total === 0) {
+                crmTable.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-500">Belum ada data di Cloud Firestore. Silakan input!</td></tr>`;
+                riwayatTable.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-500">Log riwayat kosong.</td></tr>`;
+            }
 
-    async getPayments(filter={}){ const snap=await getDocs(query(col('payments'), orderBy('date','desc'))); let arr=snap.docs.map(d=>({id:d.id,...d.data()})); if(filter.from) arr=arr.filter(p=>p.date>=filter.from); if(filter.to) arr=arr.filter(p=>p.date<=filter.to); return arr; },
-    async addPayment(p){ const r=await addDoc(col('payments'), p); return {id:r.id,...p}; },
+            data.forEach((user) => {
+                const [harga, namaPaket] = user.paket.split('|');
+                const nominal = parseInt(harga);
 
-    async generateBills(month,year){
-      const [customers, packages] = await Promise.all([this.getCustomers(), this.getPackages()]);
-      const pkgs = Object.fromEntries(packages.map(p=>[p.id,p]));
-      const existingSnap = await getDocs(query(col('bills'), where('month','==',month), where('year','==',year)));
-      const existing = new Set(existingSnap.docs.map(d=>d.data().customerId));
-      let count=0;
-      for(const c of customers.filter(c=>c.status==='Aktif')){
-        if(existing.has(c.id)) continue;
-        const pkg=pkgs[c.packageId]; if(!pkg) continue;
-        await this.addBill({customerId:c.id, customerName:c.name, packageId:c.packageId, packageName:pkg.name, amount:pkg.price, month, year, dueDate:new Date(year, month, 10).toISOString(), status:'Belum Bayar'});
-        count++;
-      }
-      return count;
-    }
-  };
-}
+                if (user.status === 'Lunas') {
+                    omset += nominal;
+                } else {
+                    piutang += nominal;
+                    isolasi++;
+                }
 
-/* ==================== AUTH ==================== */
-function createMockAuth(){
-  return {
-    async signIn(email,pass){ localStorage.setItem('netbill_user', JSON.stringify({name:'Admin Demo', email})); return {user:{email}}; },
-    async signOut(){ localStorage.removeItem('netbill_user'); },
-    onChange(cb){ const u=localStorage.getItem('netbill_user'); cb(u?JSON.parse(u):null); },
-    current(){ const u=localStorage.getItem('netbill_user'); return u?JSON.parse(u):null; }
-  };
-}
+                const badgeStatus = user.status === 'Lunas'
+                    ? `<span class="bg-green-500/10 text-green-400 text-xs px-2.5 py-1 rounded-full border border-green-500/20 font-bold">Aktif</span>`
+                    : `<span class="bg-red-500/10 text-red-400 text-xs px-2.5 py-1 rounded-full border border-red-500/20 font-bold">Isolasi</span>`;
 
-/* ==================== INIT ==================== */
-(async function init(){
-  lucide.createIcons();
-  $('#year').textContent = new Date().getFullYear();
+                crmTable.innerHTML += `
+                    <tr class="hover:bg-slate-900/40 border-b border-slate-800/40 crm-row">
+                        <td class="p-4">
+                            <div class="font-bold text-white search-name">${user.nama}</div>
+                            <div class="text-xs text-slate-500">${user.whatsapp}</div>
+                        </td>
+                        <td class="p-4">
+                            <div>${namaPaket}</div>
+                            <div class="text-xs text-indigo-400 font-bold">Rp ${nominal.toLocaleString('id-ID')}</div>
+                        </td>
+                        <td class="p-4">${badgeStatus}</td>
+                        <td class="p-4 text-center space-x-1 whitespace-nowrap">
+                            <button onclick="togglePayment('${user.id}', '${user.status}')" class="bg-slate-800 hover:bg-slate-700 text-xs px-2 py-1 rounded-lg border border-slate-700 text-amber-400 font-bold transition cursor-pointer">
+                                SAKLAR STATUS
+                            </button>
+                            <button onclick="sendWA('${user.id}')" class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white text-xs px-2 py-1 rounded-lg transition cursor-pointer">
+                                <i class="fa-brands fa-whatsapp"></i> WA
+                            </button>
+                            <button onclick="editCustomer('${user.id}')" class="bg-blue-600/20 text-blue-400 p-1.5 rounded-lg cursor-pointer"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteCustomer('${user.id}')" class="bg-red-600/20 text-red-400 p-1.5 rounded-lg cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
 
-  if(USE_MOCK){
-    dataService = createMockService();
-    authService = createMockAuth();
-    await dataService.init();
-  }else{
-    const [{ initializeApp }, { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }, { getFirestore, collection, doc, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy }] = await Promise.all([
-      import('https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js'),
-      import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js'),
-      import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js')
-    ]);
-    window.firebase = { getFirestore, collection, doc, getDocs, getDoc, addDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy };
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    dataService = createFirebaseService(db, auth);
-    await dataService.init();
-    authService = {
-      async signIn(email,pass){ return signInWithEmailAndPassword(auth,email,pass); },
-      async signOut(){ return signOut(auth); },
-      onChange(cb){ onAuthStateChanged(auth, cb); },
-      current(){ return auth.currentUser; }
-    };
-  }
+                riwayatTable.innerHTML += `
+                    <tr class="border-b border-slate-800/40">
+                        <td class="p-4 font-bold text-white">${user.nama}</td>
+                        <td class="p-4 font-semibold text-indigo-400">Rp ${nominal.toLocaleString('id-ID')}</td>
+                        <td class="p-4 text-xs text-slate-400">${user.updatedAt || 'Baru didaftarkan'}</td>
+                        <td class="p-4 font-bold ${user.status === 'Lunas' ? 'text-green-400' : 'text-red-400'}">${user.status}</td>
+                    </tr>
+                `;
+            });
 
-  // Auth flow
-  authService.onChange(user=>{
-    if(user){
-      $('#app').classList.remove('hidden');
-      $('#auth-screen').classList.add('hidden');
-      const name = user.displayName || user.name || (user.email||'Admin').split('@')[0];
-      $('#topbar-user-name').textContent = name;
-      $('#topbar-user-email').textContent = user.email||'demo@local';
-      $('#topbar-avatar').textContent = name.charAt(0).toUpperCase();
-      afterLogin();
-    }else{
-      $('#app').classList.add('hidden');
-      $('#auth-screen').classList.remove('hidden');
-    }
-  });
+            document.getElementById('statTotal').innerText = total + " User";
+            document.getElementById('statOmset').innerText = "Rp " + omset.toLocaleString('id-ID');
+            document.getElementById('statPiutang').innerText = "Rp " + piutang.toLocaleString('id-ID');
+            document.getElementById('statIsolasi').innerText = parseInt(isolasi) + " User";
 
-  $('#btn-login').onclick = async ()=>{
-    const email = $('#auth-email').value.trim();
-    const pass = $('#auth-password').value.trim();
-    if(!email||!pass){ showAuthError('Email dan password wajib diisi'); return; }
-    $('#btn-login').disabled=true;
-    try{
-      await authService.signIn(email,pass);
-    }catch(e){
-      showAuthError('Login gagal: '+(e.message||'Periksa kredensial'));
-    }finally{ $('#btn-login').disabled=false; }
-  };
-  $('#btn-logout').onclick = ()=> authService.signOut();
+            financeChart.data.datasets[0].data = [omset, piutang];
+            financeChart.update();
+        }
 
-  function showAuthError(msg){
-    const el=$('#auth-error'); el.textContent=msg; el.classList.remove('hidden');
-  }
+        // === OPERASI CLOUD FIRESTORE (WRITE/UPDATE/DELETE) ===
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('customerId').value;
+            const nama = document.getElementById('custName').value;
+            const whatsapp = document.getElementById('custWA').value;
+            const paket = document.getElementById('custPaket').value;
+            const jatuhTempo = document.getElementById('custTempo').value;
+            const tglSkrg = new Date().toLocaleDateString('id-ID') + " " + new Date().toLocaleTimeString('id-ID');
 
-  // UI bindings
-  $('#btn-menu').onclick = ()=> toggleSidebar(true);
-  $('#sidebar-overlay').onclick = ()=> toggleSidebar(false);
-  $$('.nav-btn').forEach(b=> b.onclick = ()=> { navigate(b.dataset.page); toggleSidebar(false); });
-  $('#btn-refresh').onclick = ()=> loadPage(currentPage);
-  initFilters();
-  bindModals();
-  bindSettings();
-})();
-function toggleSidebar(open){
-  $('#sidebar').classList.toggle('-translate-x-full', !open);
-  $('#sidebar-overlay').classList.toggle('hidden', !open);
-}
+            const payload = { nama, whatsapp, paket, jatuhTempo, updatedAt: tglSkrg };
 
-let currentPage='dashboard';
-let revenueChart, statusChart;
-let packagesCache=[], customersCache=[], settingsCache={};
+            if (id === "") {
+                payload.status = 'Belum Bayar';
+                db.collection("customers").add(payload);
+            } else {
+                db.collection("customers").doc(id).update(payload);
+            }
 
-async function afterLogin(){
-  settingsCache = await dataService.getSettings();
-  $('#sidebar-isp').textContent = settingsCache.ispName || 'NetBill ISP';
-  updateSettingsForm();
-  navigate('dashboard');
-}
+            clearForm();
+            gantiMenu('pelanggan');
+        }
 
-function navigate(page){
-  currentPage=page;
-  $$('.page').forEach(p=>p.classList.add('hidden'));
-  $('#page-'+page).classList.remove('hidden');
-  $('#page-title').textContent = {dashboard:'Dashboard',customers:'Pelanggan',packages:'Paket Internet',bills:'Tagihan',reports:'Laporan',settings:'Pengaturan'}[page];
-  $$('.nav-btn').forEach(b=>{
-    b.classList.toggle('bg-blue-50', b.dataset.page===page);
-    b.classList.toggle('text-blue-700', b.dataset.page===page);
-    b.classList.toggle('font-semibold', b.dataset.page===page);
-  });
-  loadPage(page);
-}
+        function togglePayment(id, currentStatus) {
+            const nextStatus = currentStatus === 'Lunas' ? 'Belum Bayar' : 'Lunas';
+            const tglSkrg = new Date().toLocaleDateString('id-ID') + " " + new Date().toLocaleTimeString('id-ID');
+            db.collection("customers").doc(id).update({
+                status: nextStatus,
+                updatedAt: tglSkrg
+            });
+        }
 
-async function loadPage(page){
-  switch(page){
-    case 'dashboard': await renderDashboard(); break;
-    case 'customers': await renderCustomers(); break;
-    case 'packages': await renderPackages(); break;
-    case 'bills': await renderBills(); break;
-    case 'reports': await renderReports(); break;
-    case 'settings': break;
-  }
-  lucide.createIcons();
-}
+        function editCustomer(id) {
+            const user = cloudDB.find(u => u.id === id);
+            if(user) {
+                document.getElementById('customerId').value = user.id;
+                document.getElementById('custName').value = user.nama;
+                document.getElementById('custWA').value = user.whatsapp;
+                document.getElementById('custPaket').value = user.paket;
+                document.getElementById('custTempo').value = user.jatuhTempo;
+            }
+        }
 
-/* ==================== DASHBOARD ==================== */
-async function renderDashboard(){
-  const [customers, bills, payments] = await Promise.all([
-    dataService.getCustomers(),
-    dataService.getBills({}),
-    dataService.getPayments({})
-  ]);
-  customersCache = customers;
-  const now = new Date();
-  const month = now.getMonth(), year = now.getFullYear();
-  const billsThisMonth = bills.filter(b=>b.month===month && b.year===year);
-  const paid = billsThisMonth.filter(b=>b.status==='Lunas');
-  const unpaid = billsThisMonth.filter(b=>b.status!=='Lunas');
+        function deleteCustomer(id) {
+            if(confirm("Hapus data pelanggan secara permanen dari Cloud Database?")) {
+                db.collection("customers").doc(id).delete();
+            }
+        }
 
-  $('#stat-customers').textContent = customers.length;
-  $('#stat-customers-active').textContent = customers.filter(c=>c.status==='Aktif').length;
-  $('#stat-bills-total').textContent = fmtRp(billsThisMonth.reduce((s,b)=>s+b.amount,0));
-  $('#stat-bills-count').textContent = billsThisMonth.length;
-  $('#stat-paid').textContent = fmtRp(paid.reduce((s,b)=>s+b.amount,0));
-  $('#stat-paid-count').textContent = paid.length;
-  $('#stat-unpaid').textContent = fmtRp(unpaid.reduce((s,b)=>s+b.amount,0));
-  $('#stat-unpaid-count').textContent = unpaid.length;
+        function sendWA(id) {
+            const user = cloudDB.find(u => u.id === id);
+            if(user) {
+                const [harga, namaPaket] = user.paket.split('|');
+                const teks = `Halo Kak ${user.nama}, menginfokan tagihan internet bulanan *${namaPaket}* Rp ${parseInt(harga).toLocaleString('id-ID')} jatuh tempo tgl ${user.jatuhTempo}. Status: *${user.status}*. Terima kasih.`;
+                window.open(`https://wa.me/${user.whatsapp}?text=${encodeURIComponent(teks)}`, '_blank');
+            }
+        }
 
-  // Revenue 6 months
-  const months = [];
-  const revenue = [];
-  for(let i=5;i>=0;i--){
-    const d = new Date(year, month-i,1);
-    const m = d.getMonth(), y=d.getFullYear();
-    months.push(d.toLocaleDateString('id-ID',{month:'short'}));
-    const paidAmt = bills.filter(b=>b.month===m && b.year===y && b.status==='Lunas').reduce((s,b)=>s+b.amount,0);
-    revenue.push(paidAmt);
-  }
-  const ctx1 = $('#chart-revenue');
-  if(revenueChart) revenueChart.destroy();
-  revenueChart = new Chart(ctx1, {
-    type:'bar',
-    data:{labels:months, datasets:[{label:'Pendapatan', data:revenue, backgroundColor:'#2563eb', borderRadius:8}]},
-    options:{plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=> 'Rp '+(v/1000)+'k'}}}}
-  });
+        function liveSearch() {
+            const query = document.getElementById('searchBar').value.toLowerCase();
+            document.querySelectorAll('.crm-row').forEach(row => {
+                const name = row.querySelector('.search-name').innerText.toLowerCase();
+                row.style.display = name.includes(query) ? '' : 'none';
+            });
+        }
 
-  // Status pie
-  const statusCounts = {
-    'Lunas': billsThisMonth.filter(b=>b.status==='Lunas').length,
-    'Belum Bayar': billsThisMonth.filter(b=>b.status==='Belum Bayar').length,
-    'Jatuh Tempo': billsThisMonth.filter(b=>b.status==='Jatuh Tempo').length
-  };
-  const ctx2 = $('#chart-status');
-  if(statusChart) statusChart.destroy();
-  statusChart = new Chart(ctx2, {
-    type:'doughnut',
-    data:{labels:Object.keys(statusCounts), datasets:[{data:Object.values(statusCounts), backgroundColor:['#10b981','#f59e0b','#ef4444']}]},
-    options:{plugins:{legend:{position:'bottom'}}}
-  });
-}
-
-/* ==================== CUSTOMERS ==================== */
-async function renderCustomers(){
-  packagesCache = await dataService.getPackages();
-  const customers = await dataService.getCustomers();
-  customersCache = customers;
-  const q = $('#customers-search').value.toLowerCase();
-  const f = $('#customers-filter-status').value;
-  const rows = customers.filter(c=>{
-    const match = !q || c.name.toLowerCase().includes(q) || c.address.toLowerCase().includes(q) || c.phone.includes(q);
-    const statusOk = !f || c.status===f;
-    return match && statusOk;
-  }).map(c=>{
-    const pkg = packagesCache.find(p=>p.id===c.packageId);
-    return `<tr class="hover:bg-slate-50">
-      <td class="px-4 py-3 font-mono text-xs">${c.id}</td>
-      <td class="px-4 py-3 font-medium">${c.name}</td>
-      <td class="px-4 py-3 text-slate-600 max-w-[220px] truncate">${c.address}</td>
-      <td class="px-4 py-3">${c.phone}</td>
-      <td class="px-4 py-3">${pkg?pkg.name+' - '+pkg.speed:'-'}</td>
-      <td class="px-4 py-3"><span class="badge ${c.status==='Aktif'?'badge-green':'badge-gray'}">${c.status}</span></td>
-      <td class="px-4 py-3 text-right">
-        <div class="flex justify-end gap-1">
-          <button data-act="wa" data-id="${c.id}" class="btn-ghost btn !p-2" title="WhatsApp"><i data-lucide="message-circle" class="w-4 h-4"></i></button>
-          <button data-act="edit" data-id="${c.id}" class="btn-ghost btn !p-2" title="Edit"><i data-lucide="pencil" class="w-4 h-4"></i></button>
-          <button data-act="del" data-id="${c.id}" class="btn-ghost btn !p-2 text-red-600" title="Hapus"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-  $('#customers-tbody').innerHTML = rows || `<tr><td colspan="7" class="px-4 py-10 text-center text-slate-500">Belum ada pelanggan</td></tr>`;
-  $('#customers-tbody').querySelectorAll('button').forEach(btn=>{
-    const id=btn.dataset.id, act=btn.dataset.act;
-    const c=customers.find(x=>x.id===id);
-    if(act==='wa'){
-      btn.onclick=()=> openWaCustomer(c);
-    }else if(act==='edit'){
-      btn.onclick=()=> openCustomerModal(c);
-    }else if(act==='del'){
-      btn.onclick=()=> confirmDeleteCustomer(c);
-    }
-  });
-  lucide.createIcons();
-}
-$('#customers-search').oninput = ()=> renderCustomers();
-$('#customers-filter-status').onchange = ()=> renderCustomers();
-$('#btn-add-customer').onclick = ()=> openCustomerModal();
-
-function openCustomerModal(c=null){
-  const isEdit=!!c;
-  openModal('Pelanggan', `
-    <div class="grid grid-cols-1 gap-3">
-      <div><label class="text-sm">Nama Lengkap</label><input id="c-name" class="input" value="${c?.name||''}"/></div>
-      <div><label class="text-sm">Alamat</label><textarea id="c-address" class="textarea" rows="2">${c?.address||''}</textarea></div>
-      <div><label class="text-sm">No. HP</label><input id="c-phone" class="input" value="${c?.phone||''}"/></div>
-      <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-sm">Paket</label><select id="c-package" class="select">${packagesCache.map(p=>`<option value="${p.id}" ${c?.packageId===p.id?'selected':''}>${p.name} - ${fmtRp(p.price)}</option>`).join('')}</select></div>
-        <div><label class="text-sm">Status</label><select id="c-status" class="select"><option ${c?.status==='Aktif'?'selected':''}>Aktif</option><option ${c?.status==='Nonaktif'?'selected':''}>Nonaktif</option></select></div>
-      </div>
-    </div>
-  `, [
-    {label:'Batal', cls:'btn-secondary', action: closeModal},
-    {label:isEdit?'Simpan':'Tambah', cls:'btn-primary', action: async ()=>{
-      const data = {
-        name:$('#c-name').value.trim(),
-        address:$('#c-address').value.trim(),
-        phone:$('#c-phone').value.trim(),
-        packageId:$('#c-package').value,
-        status:$('#c-status').value
-      };
-      if(!data.name) return toast('Nama wajib','error');
-      if(isEdit){ await dataService.updateCustomer(c.id,data); toast('Pelanggan diperbarui'); }
-      else { await dataService.addCustomer(data); toast('Pelanggan ditambahkan'); }
-      closeModal(); renderCustomers();
-    }}
-  ]);
-}
-async function confirmDeleteCustomer(c){
-  openModal('Hapus Pelanggan', `<p>Yakin hapus <b>${c.name}</b>?</p>`, [
-    {label:'Batal', cls:'btn-secondary', action: closeModal},
-    {label:'Hapus', cls:'btn-danger', action: async ()=>{ await dataService.deleteCustomer(c.id); toast('Dihapus'); closeModal(); renderCustomers(); }}
-  ]);
-}
-function openWaCustomer(c){
-  const text = `Halo ${c.name}, ini info tagihan internet Anda.`;
-  window.open(`https://wa.me/${phoneToWa(c.phone)}?text=${encodeURIComponent(text)}`,'_blank');
-}
-
-/* ==================== PACKAGES ==================== */
-async function renderPackages(){
-  packagesCache = await dataService.getPackages();
-  $('#packages-grid').innerHTML = packagesCache.map(p=>`
-    <div class="card rounded-2xl p-5 flex flex-col">
-      <div class="flex-1">
-        <div class="text-sm text-slate-500">${p.speed}</div>
-        <div class="text-xl font-bold">${p.name}</div>
-        <div class="text-2xl font-extrabold text-blue-600 mt-2">${fmtRp(p.price)}<span class="text-sm font-medium text-slate-500">/bln</span></div>
-      </div>
-      <div class="flex gap-2 mt-4">
-        <button data-id="${p.id}" data-act="edit" class="btn-secondary btn flex-1 justify-center">Edit</button>
-        <button data-id="${p.id}" data-act="del" class="btn-ghost btn !px-3 text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-      </div>
-    </div>
-  `).join('') || `<div class="text-slate-500">Belum ada paket</div>`;
-  $('#packages-grid').querySelectorAll('button').forEach(btn=>{
-    const p=packagesCache.find(x=>x.id===btn.dataset.id);
-    if(btn.dataset.act==='edit') btn.onclick=()=> openPackageModal(p);
-    else btn.onclick=()=> confirmDeletePackage(p);
-  });
-  lucide.createIcons();
-}
-$('#btn-add-package').onclick = ()=> openPackageModal();
-
-function openPackageModal(p=null){
-  const isEdit=!!p;
-  openModal(isEdit?'Edit Paket':'Tambah Paket', `
-    <div class="space-y-3">
-      <div><label class="text-sm">Nama Paket</label><input id="p-name" class="input" value="${p?.name||''}"/></div>
-      <div><label class="text-sm">Kecepatan</label><input id="p-speed" class="input" value="${p?.speed||''}" placeholder="20 Mbps"/></div>
-      <div><label class="text-sm">Harga / Bulan</label><input id="p-price" type="number" class="input" value="${p?.price||''}"/></div>
-    </div>
-  `, [
-    {label:'Batal', cls:'btn-secondary', action: closeModal},
-    {label:'Simpan', cls:'btn-primary', action: async ()=>{
-      const data={ name:$('#p-name').value.trim(), speed:$('#p-speed').value.trim(), price: parseInt($('#p-price').value||0) };
-      if(!data.name) return toast('Nama wajib','error');
-      if(isEdit){ await dataService.updatePackage(p.id,data); } else { await dataService.addPackage(data); }
-      toast('Paket disimpan'); closeModal(); renderPackages();
-    }}
-  ]);
-}
-async function confirmDeletePackage(p){
-  openModal('Hapus Paket', `<p>Yakin hapus paket <b>${p.name}</b>?</p>`, [
-    {label:'Batal', cls:'btn-secondary', action: closeModal},
-    {label:'Hapus', cls:'btn-danger', action: async ()=>{ await dataService.deletePackage(p.id); toast('Dihapus'); closeModal(); renderPackages(); }}
-  ]);
-}
-
-/* ==================== BILLS ==================== */
-function initFilters(){
-  const monthSel = $('#bills-filter-month');
-  const yearSel = $('#bills-filter-year');
-  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-  monthSel.innerHTML = months.map((m,i)=>`<option value="${i}" ${i===new Date().getMonth()?'selected':''}>${m}</option>`).join('');
-  const y = new Date().getFullYear();
-  yearSel.innerHTML = [y-1,y,y+1].map(yy=>`<option ${yy===y?'selected':''}>${yy}</option>`).join('');
-  monthSel.onchange = yearSel.onchange = $('#bills-filter-status').onchange = renderBills;
-  $('#btn-refresh-bills').onclick = renderBills;
-  $('#btn-generate-bills').onclick = openGenerateModal;
-}
-async function renderBills(){
-  const month = parseInt($('#bills-filter-month').value);
-  const year = parseInt($('#bills-filter-year').value);
-  const status = $('#bills-filter-status').value || undefined;
-  const bills = await dataService.getBills({month,year,status});
-  $('#bills-tbody').innerHTML = bills.map(b=>{
-    const badge = b.status==='Lunas'?'badge-green': b.status==='Jatuh Tempo'?'badge-red':'badge-yellow';
-    return `<tr class="hover:bg-slate-50">
-      <td class="px-4 py-3">${new Date(year,month,1).toLocaleDateString('id-ID',{month:'short',year:'numeric'})}</td>
-      <td class="px-4 py-3 font-medium">${b.customerName}</td>
-      <td class="px-4 py-3">${b.packageName}</td>
-      <td class="px-4 py-3 text-right font-semibold">${fmtRp(b.amount)}</td>
-      <td class="px-4 py-3">${fmtDate(b.dueDate)}</td>
-      <td class="px-4 py-3"><span class="badge ${badge}">${b.status}</span></td>
-      <td class="px-4 py-3">
-        <div class="flex justify-end gap-1">
-          ${b.status!=='Lunas'?`<button data-id="${b.id}" data-act="pay" class="btn-primary btn !py-1.5 !px-3 text-xs">Bayar</button>`:''}
-          <button data-id="${b.id}" data-act="detail" class="btn-ghost btn !p-2" title="Detail"><i data-lucide="eye" class="w-4 h-4"></i></button>
-          <button data-id="${b.id}" data-act="print" class="btn-ghost btn !p-2" title="Cetak"><i data-lucide="printer" class="w-4 h-4"></i></button>
-          <button data-id="${b.id}" data-act="wa" class="btn-ghost btn !p-2" title="WA"><i data-lucide="message-circle" class="w-4 h-4"></i></button>
-        </div>
-      </td>
-    </tr>`;
-  }).join('') || `<tr><td colspan="7" class="px-4 py-10 text-center text-slate-500">Belum ada tagihan</td></tr>`;
-  $('#bills-tbody').querySelectorAll('button').forEach(btn=>{
-    const id=btn.dataset.id, act=btn.dataset.act;
-    if(act==='pay') btn.onclick=()=> openPayModal(id);
-    else if(act==='detail') btn.onclick=()=> openBillDetail(id);
-    else if(act==='print') btn.onclick=()=> printInvoice(id);
-    else if(act==='wa') btn.onclick=()=> sendWaBill(id);
-  });
-  lucide.createIcons();
-}
-function openGenerateModal(){
-  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-  openModal('Generate Tagihan Massal', `
-    <div class="grid grid-cols-2 gap-3">
-      <div><label class="text-sm">Bulan</label><select id="gen-month" class="select">${months.map((m,i)=>`<option value="${i}">${m}</option>`).join('')}</select></div>
-      <div><label class="text-sm">Tahun</label><input id="gen-year" type="number" class="input" value="${new Date().getFullYear()}"/></div>
-    </div>
-    <p class="text-xs text-slate-600 bg-amber-50 border border-amber-200 rounded-lg p-3">Tagihan akan dibuat untuk semua pelanggan Aktif yang belum memiliki tagihan di periode tersebut.</p>
-  `, [
-    {label:'Batal', cls:'btn-secondary', action: closeModal},
-    {label:'Generate', cls:'btn-primary', action: async ()=>{
-      const m=parseInt($('#gen-month').value), y=parseInt($('#gen-year').value);
-      const count = await dataService.generateBills(m,y);
-      toast(`${count} tagihan berhasil dibuat`); closeModal(); renderBills(); renderDashboard();
-    }}
-  ]);
-  $('#gen-month').value = $('#bills-filter-month').value;
-}
-async function openPayModal(billId){
-  const bill = await dataService.getBill(billId);
-  if(!bill) return;
-  openModal('Pembayaran Tagihan', `
-    <div class="space-y-3">
-      <div class="card bg-slate-50 p-3 rounded-xl text-sm">
-        <div class="font-semibold">${bill.customerName}</div>
-        <div>${new Date(bill.year,bill.month,1).toLocaleDateString('id-ID',{month:'long',year:'numeric'})} • ${fmtRp(bill.amount)}</div>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-sm">Metode</label><select id="pay-method" class="select"><option>Transfer</option><option>Tunai</option><option>E-Wallet</option></select></div>
-        <div><label class="text-sm">Tanggal</label><input id="pay-date" type="date" class="input" value="${fmtDateInput(new Date())}"/></div>
-      </div>
-      <div><label class="text-sm">Jumlah Dibayar</label><input id="pay-amount" type="number" class="input" value="${bill.amount}"/></div>
-      <div><label class="text-sm">Catatan</label><input id="pay-note" class="input" placeholder="Opsional"/></div>
-    </div>
-  `, [
-    {label:'Batal', cls:'btn-secondary', action: closeModal},
-    {label:'Simpan Pembayaran', cls:'btn-primary', action: async ()=>{
-      const amount = parseInt($('#pay-amount').value||0);
-      await dataService.addPayment({billId, amount, method:$('#pay-method').value, date:$('#pay-date').value, note:$('#pay-note').value});
-      await dataService.updateBill(billId,{status:'Lunas', paidAt:Date.now()});
-      toast('Pembayaran disimpan'); closeModal(); renderBills(); renderDashboard();
-      // send wa receipt if template exists
-      if(settingsCache.waTemplatePembayaran) {
-        const cust = customersCache.find(c=>c.id===bill.customerId);
-        if(cust) sendWaWithTemplate('pay', cust, bill);
-      }
-    }}
-  ]);
-}
-async function openBillDetail(id){
-  const bill = await dataService.getBill(id);
-  const cust = customersCache.find(c=>c.id===bill.customerId) || {};
-  openModal('Detail Tagihan', `
-    <div class="space-y-2 text-sm">
-      <div class="flex justify-between"><span class="text-slate-500">Pelanggan</span><span class="font-medium">${bill.customerName}</span></div>
-      <div class="flex justify-between"><span class="text-slate-500">Paket</span><span>${bill.packageName}</span></div>
-      <div class="flex justify-between"><span class="text-slate-500">Periode</span><span>${new Date(bill.year,bill.month,1).toLocaleDateString('id-ID',{month:'long',year:'numeric'})}</span></div>
-      <div class="flex justify-between"><span class="text-slate-500">Jumlah</span><span class="font-semibold">${fmtRp(bill.amount)}</span></div>
-      <div class="flex justify-between"><span class="text-slate-500">Jatuh Tempo</span><span>${fmtDate(bill.dueDate)}</span></div>
-      <div class="flex justify-between"><span class="text-slate-500">Status</span><span>${bill.status}</span></div>
-      <div class="flex justify-between"><span class="text-slate-500">Alamat</span><span class="text-right max-w-[60%]">${cust.address||'-'}</span></div>
-    </div>
-  `, [{label:'Tutup', cls:'btn-primary', action: closeModal}]);
-}
-async function printInvoice(id){
-  const bill = await dataService.getBill(id);
-  const cust = (await dataService.getCustomers()).find(c=>c.id===bill.customerId) || {};
-  $('#inv-isp-name').textContent = settingsCache.ispName || 'NetBill';
-  $('#inv-isp-address').textContent = settingsCache.ispAddress || '';
-  $('#inv-isp-phone').textContent = settingsCache.ispPhone || '';
-  $('#inv-number').textContent = '# INV-'+bill.id.slice(-6).toUpperCase();
-  $('#inv-customer-name').textContent = bill.customerName;
-  $('#inv-customer-address').textContent = cust.address||'-';
-  $('#inv-customer-phone').textContent = cust.phone||'-';
-  $('#inv-period').textContent = new Date(bill.year,bill.month,1).toLocaleDateString('id-ID',{month:'long',year:'numeric'});
-  $('#inv-due').textContent = fmtDate(bill.dueDate);
-  $('#inv-status').textContent = bill.status;
-  $('#inv-package').textContent = bill.packageName;
-  $('#inv-amount').textContent = fmtRp(bill.amount);
-  $('#inv-total').textContent = fmtRp(bill.amount);
-  $('#invoice-print').classList.remove('hidden');
-  window.print();
-  setTimeout(()=> $('#invoice-print').classList.add('hidden'), 500);
-}
-async function sendWaBill(id){
-  const bill = await dataService.getBill(id);
-  const cust = customersCache.find(c=>c.id===bill.customerId);
-  if(!cust) return toast('Pelanggan tidak ditemukan','error');
-  sendWaWithTemplate('bill', cust, bill);
-}
-function sendWaWithTemplate(type, cust, bill){
-  const tpl = type==='bill'? settingsCache.waTemplateTagihan : settingsCache.waTemplatePembayaran;
-  if(!tpl) return toast('Template WA belum diatur','error');
-  const period = new Date(bill.year,bill.month,1).toLocaleDateString('id-ID',{month:'long',year:'numeric'});
-  const map = {
-    '{nama}': cust.name,
-    '{periode}': period,
-    '{jumlah}': fmtRp(bill.amount),
-    '{jatuh_tempo}': fmtDate(bill.dueDate),
-    '{tanggal}': fmtDate(new Date()),
-    '{isp}': settingsCache.ispName||'NetBill'
-  };
-  let text = tpl;
-  for(const k in map) text = text.replaceAll(k, map[k]);
-  window.open(`https://wa.me/${phoneToWa(cust.phone)}?text=${encodeURIComponent(text)}`,'_blank');
-}
-
-/* ==================== REPORTS ==================== */
-async function renderReports(){
-  const from = $('#report-from').value || fmtDateInput(new Date(new Date().getFullYear(), new Date().getMonth(),1));
-  const to = $('#report-to').value || fmtDateInput(new Date());
-  $('#report-from').value = from; $('#report-to').value = to;
-  const payments = await dataService.getPayments({from,to});
-  const bills = await dataService.getBills({});
-  const billMap = Object.fromEntries(bills.map(b=>[b.id,b]));
-  $('#report-tbody').innerHTML = payments.map(p=>{
-    const b = billMap[p.billId];
-    return `<tr>
-      <td class="px-4 py-2">${fmtDate(p.date)}</td>
-      <td class="px-4 py-2">${b?.customerName||'-'}</td>
-      <td class="px-4 py-2">${b? new Date(b.year,b.month,1).toLocaleDateString('id-ID',{month:'short',year:'numeric'}):'-'}</td>
-      <td class="px-4 py-2 text-right font-medium">${fmtRp(p.amount)}</td>
-      <td class="px-4 py-2">${p.method}</td>
-      <td class="px-4 py-2 text-slate-600">${p.note||''}</td>
-    </tr>`;
-  }).join('') || `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">Tidak ada data</td></tr>`;
-}
-$('#btn-report-run').onclick = renderReports;
-$('#btn-report-csv').onclick = async ()=>{
-  const rows = [['Tanggal','Pelanggan','Periode','Jumlah','Metode','Catatan']];
-  $$('#report-tbody tr').forEach(tr=>{
-    const tds = [...tr.querySelectorAll('td')].map(td=>td.textContent.trim());
-    if(tds.length) rows.push(tds);
-  });
-  const csv = rows.map(r=>r.map(v=>`"${v.replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv],{type:'text/csv'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='laporan-pembayaran.csv'; a.click();
-};
-$('#btn-report-print').onclick = ()=> window.print();
-
-/* ==================== SETTINGS ==================== */
-function bindSettings(){
-  $('#btn-save-isp').onclick = async ()=>{
-    const s = {
-      ispName: $('#set-isp-name').value.trim(),
-      ispAddress: $('#set-isp-address').value.trim(),
-      ispLogo: $('#set-isp-logo').value.trim(),
-      ispPhone: $('#set-isp-phone').value.trim()
-    };
-    await dataService.saveSettings(s);
-    settingsCache = {...settingsCache,...s};
-    $('#sidebar-isp').textContent = s.ispName || 'NetBill ISP';
-    toast('Profil ISP disimpan');
-  };
-  $('#btn-save-wa').onclick = async ()=>{
-    const s = {
-      waTemplateTagihan: $('#set-wa-tagihan').value.trim(),
-      waTemplatePembayaran: $('#set-wa-bayar').value.trim()
-    };
-    await dataService.saveSettings(s);
-    settingsCache = {...settingsCache,...s};
-    toast('Template WA disimpan');
-  };
-  $('#btn-save-fb').onclick = async ()=>{
-    const s = {
-      fbApiKey: $('#set-fb-apikey').value.trim(),
-      fbAuthDomain: $('#set-fb-authdomain').value.trim(),
-      fbProjectId: $('#set-fb-projectid').value.trim(),
-      fbBucket: $('#set-fb-bucket').value.trim(),
-      fbSenderId: $('#set-fb-senderid').value.trim(),
-      fbAppId: $('#set-fb-appid').value.trim()
-    };
-    await dataService.saveSettings(s);
-    toast('Konfigurasi Firebase disimpan (perlu reload & ganti di kode)');
-  };
-}
-function updateSettingsForm(){
-  $('#set-isp-name').value = settingsCache.ispName || 'NetBill RT/RW Net';
-  $('#set-isp-address').value = settingsCache.ispAddress || 'Jl. Merdeka No.1';
-  $('#set-isp-logo').value = settingsCache.ispLogo || '';
-  $('#set-isp-phone').value = settingsCache.ispPhone || '081234567890';
-  $('#set-wa-tagihan').value = settingsCache.waTemplateTagihan || 'Halo {nama}, tagihan internet periode {periode} sebesar {jumlah}. Jatuh tempo {jatuh_tempo}. Terima kasih - {isp}';
-  $('#set-wa-bayar').value = settingsCache.waTemplatePembayaran || 'Terima kasih {nama}, pembayaran {periode} sebesar {jumlah} telah kami terima pada {tanggal}. - {isp}';
-  $('#set-fb-apikey').value = settingsCache.fbApiKey || firebaseConfig.apiKey;
-  $('#set-fb-authdomain').value = settingsCache.fbAuthDomain || firebaseConfig.authDomain;
-  $('#set-fb-projectid').value = settingsCache.fbProjectId || firebaseConfig.projectId;
-  $('#set-fb-bucket').value = settingsCache.fbBucket || firebaseConfig.storageBucket;
-  $('#set-fb-senderid').value = settingsCache.fbSenderId || firebaseConfig.messagingSenderId;
-  $('#set-fb-appid').value = settingsCache.fbAppId || firebaseConfig.appId;
-}
-
-/* ==================== MODAL HELPER ==================== */
-function openModal(title, bodyHtml, actions=[]){
-  $('#modal-title').textContent = title;
-  $('#modal-body').innerHTML = bodyHtml;
-  const footer = $('#modal-footer');
-  footer.innerHTML = '';
-  actions.forEach(a=>{
-    const btn=document.createElement('button');
-    btn.className = `btn ${a.cls}`; btn.innerHTML = a.label;
-    btn.onclick = a.action;
-    footer.appendChild(btn);
-  });
-  $('#modal').classList.remove('hidden');
-  lucide.createIcons();
-}
-function closeModal(){ $('#modal').classList.add('hidden'); }
-$('#modal-close').onclick = closeModal;
-$('#modal').querySelector('.absolute').onclick = closeModal;
-
-function bindModals(){
-  document.addEventListener('keydown', e=>{
-    if(e.key==='Escape' && !$('#modal').classList.contains('hidden')) closeModal();
-  });
-}
-
-/* Initial icons */
-lucide.createIcons();
-</script>
-<script>(function(){document.addEventListener("click",function(e){var a=e.target.closest("[data-product-id]");if(!a)return;e.preventDefault();var pid=a.getAttribute("data-product-id");if(pid)parent.postMessage({type:"ecto-artifact-link-click",productId:pid},"*")})})();</script>
+        function clearForm() {
+            document.getElementById('proForm').reset();
+            document.getElementById('customerId').value = "";
+        }
+    </script>
 </body>
 </html>
